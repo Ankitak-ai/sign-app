@@ -12,8 +12,10 @@ from pdf_generator import generate_contract
 from signature_utils import apply_signature_to_pdf, normalize_signature_image, typed_signature_to_png_bytes
 from storage import save_contract_record
 
+
 st.set_page_config(page_title="HyperChat Contract Generator", layout="wide")
 st.title("HyperChat Contract Generator")
+
 
 for key, default in {
     "contract_data": None,
@@ -28,12 +30,15 @@ for key, default in {
     if key not in st.session_state:
         st.session_state[key] = default
 
+
 use_auth = st.sidebar.toggle("Enable login", value=False)
 if use_auth and not login_widget():
     st.info("Please login to continue.")
     st.stop()
 
+
 left, right = st.columns([1, 1])
+
 
 with left:
     with st.form("contract_form"):
@@ -78,16 +83,20 @@ with left:
             st.write("**Fee structure:** Dynamic")
         st.write(f"**Status:** {st.session_state.signing_status}")
 
+
 with right:
     st.subheader("PDF Preview")
     preview_pdf = st.session_state.signed_pdf or st.session_state.generated_pdf
     if preview_pdf:
-        try:
-            if hasattr(st, "pdf"):
+        preview_rendered = False
+        if hasattr(st, "pdf"):
+            try:
                 st.pdf(preview_pdf)
-            else:
-                raise StreamlitAPIException("st.pdf unavailable")
-        except StreamlitAPIException:
+                preview_rendered = True
+            except StreamlitAPIException:
+                preview_rendered = False
+
+        if not preview_rendered:
             b64 = base64.b64encode(preview_pdf).decode("utf-8")
             st.components.v1.html(
                 f'<iframe src="data:application/pdf;base64,{b64}" width="100%" height="700" type="application/pdf"></iframe>',
@@ -95,6 +104,7 @@ with right:
             )
     else:
         st.info("Generate a contract to preview it here.")
+
 
 st.markdown("---")
 st.subheader("Signature")
@@ -117,6 +127,7 @@ else:
         if canvas_result.image_data is not None:
             from PIL import Image
             import io
+
             img = Image.fromarray((canvas_result.image_data).astype("uint8"), mode="RGBA")
             buf = io.BytesIO()
             img.save(buf, format="PNG")
@@ -143,6 +154,7 @@ else:
             st.session_state.signed_pdf,
         )
         st.success("Contract signed successfully.")
+
 
 st.markdown("---")
 st.subheader("Downloads")
