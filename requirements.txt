@@ -1,5 +1,0 @@
-streamlit
-reportlab
-streamlit-drawable-canvas
-PyPDF2
-Pillow
